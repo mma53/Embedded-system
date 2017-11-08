@@ -7,31 +7,20 @@
 #include <util/delay.h>
 #include "AVR_TTC_scheduler.h"
 
+#define HIGH 0x1
+#define LOW  0x0
 
 volatile int extDist = 0;
 volatile int lightInt = 0;
 volatile int currTemp = 0;
 
-// output on USB = PD1 = board pin 1
-// datasheet p.190; F_OSC = 16 MHz & baud rate = 19.200
-#define UBBRVAL 51
 
-/* Initialize serial.
- * BECAUSE WE'RE NOT FUCKING ALLOWED TO USE ARDUINO C, LIKE I DON'T HAVE ENOUGH THINGS TO TAKE CARE OF 
- * IN MY LIFE RIGHT NOW. SO WHY THE FUCK NOT JUST LET ME WRITE CODE THAT IS FREELY AVAILABLE ON THE 
- * INTERNET, IS BETTER DOCUMENTED AND PROBABLY WORKING BETTER THAN WHATEVER I'LL BE ABLE TO COME UP 
- * WITH?! NO FUCKING WONDER THIS BACHELORS PROGRAMME IS RATED WORST BY THE STUDENTS TAKING IT, THIS IS 
- * A FUCKING WASTE OF FUCKING TIME. FUCK. ~Matthijs
- */
-void uart_init() {
-	// set the baud rate
-	UBRR0H = 0;
-	UBRR0L = UBBRVAL;
-	// disable U2X mode
+/* Initialize serial connection with given baudrate. */
+void initialize_serial(long baudrate) {
+  UBRR0H = 0;
+	UBRR0L = ((F_CPU / ( 16 * baudrate ))) - 1;
 	UCSR0A = 0;
-	// enable transmitter
 	UCSR0B = _BV(TXEN0) | _BV(RXEN0);
-	// set frame format : asynchronous, 8 data bits, 1 stop bit, no parity
 	UCSR0C = _BV(UCSZ01) | _BV(UCSZ00);
 }
 
@@ -104,8 +93,6 @@ void modifyValues() {
 
 // ------------------------------------------------------------------------------------------------------
 
-//TODO: Hate on teachers for not allowing Arduino C. Or just add more passive-aggressive comments.
-// That'll show them.
 
 void sendData(int data) {
   uint8_t *toSend;
@@ -126,6 +113,7 @@ void sendK() {
 }
 
 int main() {
+  initialize_serial(19200);
   
   SCH_Init_T1();
   SCH_Start();
@@ -137,7 +125,7 @@ int main() {
   SCH_Add_Task(checkTemp, 0, 4000); // Check temperature every 40 seconds.
   SCH_Add_Task(checkLight, 0, 3000); // Check light intensity every 30 seconds.
   SCH_Add_Task(tryToSendData, 0, 6000); // Try to send data every 60 seconds.
-  SCH_Add_Task(sendK, 1000, 100);
+  SCH_Add_Task(sendK, 1000, 500);
   
   while(1) {
     SCH_Dispatch_Tasks();
