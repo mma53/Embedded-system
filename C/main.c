@@ -4,6 +4,7 @@
 #define F_CPU 16E6
 #include <util/delay.h>
 #include "AVR_TTC_scheduler.h"
+#include <Arduino.h>
 
 volatile int extDist = 0;
 volatile int lightInt = 0;
