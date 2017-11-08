@@ -32,19 +32,19 @@ void transmit(uint8_t data) {
 	UDR0 = data;
 }
 
+void transmitInt(int data) {
+  int i;
+  for(i = 0; i < 2; i++) {
+    char toSend = data >> 8;
+    transmit(toSend);
+    data <<= 8;
+  }
+}
+
 /* Receive bits until full byte has been set, then return bit */
 char receive(void) {
 	loop_until_bit_is_set(UCSR0A, RXC0);
 	return UDR0;
-}
-
-uint8_t *intToBytes(int data) {
-  uint8_t bytes[2];
-  
-  bytes[0] = (data >> 8) & 0xFF;
-  bytes[1] = data & 0xFF;
-  
-  return bytes;
 }
 
 // ------------------------------------------------------------------------------------------------------
@@ -93,19 +93,11 @@ void modifyValues() {
 
 // ------------------------------------------------------------------------------------------------------
 
-
-void sendData(int data) {
-  uint8_t *toSend;
-  toSend = intToBytes(data);
-  transmit(toSend[0]);
-  transmit(toSend[1]);
-}
-
 void tryToSendData() {
   modifyValues();
-  sendData(extDist);
-  sendData(lightInt);
-  sendData(currTemp);
+  transmitInt(extDist);
+  transmitInt(lightInt);
+  transmitInt(currTemp);
 }
 
 void sendK() {
