@@ -1,0 +1,3 @@
+w = "Word"
+
+print(w)
