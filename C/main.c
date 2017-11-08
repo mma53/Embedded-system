@@ -3,9 +3,9 @@
 #include <avr/sfr_defs.h>
 #include <stdlib.h>
 #include <stdint.h>
+#define F_CPU 16E6
 #include <util/delay.h>
 #include "AVR_TTC_scheduler.h"
-#define F_CPU 16E6
 
 
 volatile int extDist = 0;
@@ -42,7 +42,7 @@ char receive(void) {
 	return UDR0;
 }
 
-*uint8_t intToBytes(int data) {
+uint8_t *intToBytes(int data) {
   uint8_t bytes[2];
   
   bytes[0] = (data >> 8) & 0xFF;
@@ -80,15 +80,15 @@ int modifyValue(int value) {
 /* TO BE REMOVED!! Modifies values of the global integers to provide testing input for the Python team */
 void modifyValues() {
   int i;
-  ext = extDist;
+  int ext = extDist;
   modifyValue(ext);
   extDist = ext;
-  light = lightInt;
+  int light = lightInt;
   for(i = 0; i < 3; i++) {
     modifyValue(light);
   }
   lightInt = light;
-  temp = currTemp;
+  int temp = currTemp;
   for(i = 0; i < 2; i++) {
     modifyValue(temp);
   }
@@ -101,7 +101,8 @@ void modifyValues() {
 // That'll show them.
 
 void sendData(int data) {
-  uint8_t *toSend = intToBytes(data);
+  uint8_t *toSend;
+  toSend = intToBytes(data);
   transmit(toSend[0]);
   transmit(toSend[1]);
 }
@@ -113,16 +114,23 @@ void tryToSendData() {
   sendData(currTemp);
 }
 
+void sendK() {
+	transmit(0x4B);
+}
+
 int main() {
   
   SCH_Init_T1();
   SCH_Start();
+  
+  
   
   // 10ms/tick, 1s = 100.
   SCH_Add_Task(checkExtDist, 0, 500); // Check screen extension every 5 seconds.
   SCH_Add_Task(checkTemp, 0, 4000); // Check temperature every 40 seconds.
   SCH_Add_Task(checkLight, 0, 3000); // Check light intensity every 30 seconds.
   SCH_Add_Task(tryToSendData, 0, 6000); // Try to send data every 60 seconds.
+  SCH_Add_Task(sendK, 1000, 100);
   
   while(1) {
     SCH_Dispatch_Tasks();
