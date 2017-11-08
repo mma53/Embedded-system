@@ -1,18 +1,57 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
+#include <avr/sfr_defs.h>
+#include <stdlib.h>
 #include <stdint.h>
-#define F_CPU 16E6
 #include <util/delay.h>
 #include "AVR_TTC_scheduler.h"
-#include <Arduino.h>
+#define F_CPU 16E6
+
 
 volatile int extDist = 0;
 volatile int lightInt = 0;
 volatile int currTemp = 0;
 
-void setupSerial() {
-  Serial.begin(19200);
+
+#define UBBRVAL 51
+
+/* Initialize serial.
+ * BECAUSE WE'RE NOT FUCKING ALLOWED TO USE ARDUINO C, LIKE I DON'T HAVE ENOUGH THINGS TO TAKE CARE OF 
+ * IN MY LIFE RIGHT NOW. SO WHY THE FUCK NOT JUST LET ME WRITE CODE THAT IS FREELY AVAILABLE ON THE 
+ * INTERNET, IS BETTER DOCUMENTED AND PROBABLY WORKING BETTER THAN WHATEVER I'LL BE ABLE TO COME UP 
+ * WITH?! NO FUCKING WONDER THIS BACHELORS PROGRAMME IS RATED WORST BY THE STUDENTS TAKING IT, THIS IS 
+ * A FUCKING WASTE OF FUCKING TIME. FUCK. ~Matthijs
+ */
+void uart_init() {
+	UBRR0H = 0;
+	UBRR0L = UBBRVAL;
+	UCSR0A = 0;
+	UCSR0B = _BV(TXEN0) | _BV(RXEN0);
+	UCSR0C = _BV(UCSZ01) | _BV(UCSZ00);
 }
+
+/* Transmit 8-bit integer */
+void transmit(uint8_t data) {
+	loop_until_bit_is_set(UCSR0A, UDRE0);
+	UDR0 = data;
+}
+
+/* Receive bits until full byte has been set, then return bit */
+char receive(void) {
+	loop_until_bit_is_set(UCSR0A, RXC0);
+	return UDR0;
+}
+
+*uint8_t intToBytes(int data) {
+  uint8_t bytes[2];
+  
+  bytes[0] = (data >> 8) & 0xFF;
+  bytes[1] = data & 0xFF;
+  
+  return bytes;
+}
+
+// ------------------------------------------------------------------------------------------------------
 
 void checkExtDist() {
   /* Code to see extension distance here */
@@ -25,6 +64,8 @@ void checkTemp() {
 void checkLight() {
   /* Code to check current light intensity here */
 }
+
+// ------------------------------------------------------------------------------------------------------
 
 /* TO BE REMOVED!! Changes a given int by +1 or resets it to 0 when it has reached 10k */
 int modifyValue(int value) {
@@ -54,15 +95,25 @@ void modifyValues() {
   currTemp = temp;
 }
 
+// ------------------------------------------------------------------------------------------------------
+
+//TODO: Hate on teachers for not allowing Arduino C. Or just add more passive-aggressive comments.
+// That'll show them.
+
+void sendData(int data) {
+  uint8_t *toSend = intToBytes(data);
+  transmit(toSend[0]);
+  transmit(toSend[1]);
+}
+
 void tryToSendData() {
   modifyValues();
-  Serial.write(extDist);
-  Serial.write(lightInt);
-  Serial.write(currTemp);
+  sendData(extDist);
+  sendData(lightInt);
+  sendData(currTemp);
 }
 
 int main() {
-  setupSerial();
   
   SCH_Init_T1();
   SCH_Start();
