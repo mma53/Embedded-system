@@ -1,0 +1,3 @@
+n = "Word"
+
+print(n)
