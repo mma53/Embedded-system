@@ -12,7 +12,8 @@ volatile int extDist = 0;
 volatile int lightInt = 0;
 volatile int currTemp = 0;
 
-
+// output on USB = PD1 = board pin 1
+// datasheet p.190; F_OSC = 16 MHz & baud rate = 19.200
 #define UBBRVAL 51
 
 /* Initialize serial.
@@ -23,14 +24,20 @@ volatile int currTemp = 0;
  * A FUCKING WASTE OF FUCKING TIME. FUCK. ~Matthijs
  */
 void uart_init() {
+	// set the baud rate
 	UBRR0H = 0;
 	UBRR0L = UBBRVAL;
+	// disable U2X mode
 	UCSR0A = 0;
+	// enable transmitter
 	UCSR0B = _BV(TXEN0) | _BV(RXEN0);
+	// set frame format : asynchronous, 8 data bits, 1 stop bit, no parity
 	UCSR0C = _BV(UCSZ01) | _BV(UCSZ00);
 }
 
 /* Transmit 8-bit integer */
+// wait for an empty transmit buffer
+// UDRE is set when the transmit buffer is empty
 void transmit(uint8_t data) {
 	loop_until_bit_is_set(UCSR0A, UDRE0);
 	UDR0 = data;
