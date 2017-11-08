@@ -1,3 +1,4 @@
 n = "Word"
+b = "Word2"
 
-print(n)
+print(n, b)
