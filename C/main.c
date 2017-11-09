@@ -95,13 +95,12 @@ void modifyValues() {
 
 void tryToSendData() {
   modifyValues();
+  transmit(' ');
+  transmit(' ');
+  transmit(' ');
   transmitInt(extDist);
   transmitInt(lightInt);
   transmitInt(currTemp);
-}
-
-void sendK() {
-	transmit(0x4B);
 }
 
 int main() {
@@ -117,7 +116,6 @@ int main() {
   SCH_Add_Task(checkTemp, 0, 4000); // Check temperature every 40 seconds.
   SCH_Add_Task(checkLight, 0, 3000); // Check light intensity every 30 seconds.
   SCH_Add_Task(tryToSendData, 0, 6000); // Try to send data every 60 seconds.
-  SCH_Add_Task(sendK, 1000, 500);
   
   while(1) {
     SCH_Dispatch_Tasks();
