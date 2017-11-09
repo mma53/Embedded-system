@@ -98,9 +98,12 @@ void tryToSendData() {
   transmit(' ');
   transmit(' ');
   transmit(' ');
+  transmit(' ');
   transmitInt(extDist);
-  transmitInt(lightInt);
-  transmitInt(currTemp);
+  //transmitInt(lightInt);
+  //transmitInt(currTemp);
+  transmit('.');
+  _delay_ms(1000);
 }
 
 int main() {
