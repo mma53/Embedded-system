@@ -134,7 +134,7 @@ int main() {
   
   
   // 10ms/tick, 1s = 100.
-  SCH_Add_Task(checkExtDist, 0, 500); // Check screen extension every 5 seconds.
+  SCH_Add_Task(checkExtDist, 1, 500); // Check screen extension every 5 seconds.
   SCH_Add_Task(checkTemp, 2, 4000); // Check temperature every 40 seconds.
   SCH_Add_Task(checkLight, 3, 3000); // Check light intensity every 30 seconds.
   SCH_Add_Task(tryToSendData, 5, 6000); // Try to send data every 60 seconds.
