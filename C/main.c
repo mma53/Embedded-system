@@ -132,8 +132,6 @@ int main() {
   SCH_Init_T1();
   SCH_Start();
   
-  sendSOS();
-  
   
   // 10ms/tick, 1s = 100.
   SCH_Add_Task(checkExtDist, 1, 500); // Check screen extension every 5 seconds.
