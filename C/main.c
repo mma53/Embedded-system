@@ -49,32 +49,6 @@ char receive(void) {
 
 // ------------------------------------------------------------------------------------------------------
 
-void checkExtDist() {
-  /* Code to see extension distance here */
-  
-  extDist = modifyValue(extDist);
-  
-  return;
-}
-
-void checkTemp() {
-  /* Code to check current temperature here */
-  
-  currTemp = modifyValue(currTemp);
-  
-  return;
-}
-
-void checkLight() {
-  /* Code to check current light intensity here */
-  
-  lightInt = modifyValue(lightInt);
-  
-  return;
-}
-
-// ------------------------------------------------------------------------------------------------------
-
 /* TO BE REMOVED!! Changes a given int by +1 or resets it to 0 when it has reached 10k */
 int modifyValue(int value) {
   if(value > 10000) {
@@ -101,6 +75,32 @@ void modifyValues() {
     modifyValue(temp);
   }
   currTemp = temp;
+}
+
+// ------------------------------------------------------------------------------------------------------
+
+void checkExtDist() {
+  /* Code to see extension distance here */
+  
+  extDist = modifyValue(extDist);
+  
+  return;
+}
+
+void checkTemp() {
+  /* Code to check current temperature here */
+  
+  currTemp = modifyValue(currTemp);
+  
+  return;
+}
+
+void checkLight() {
+  /* Code to check current light intensity here */
+  
+  lightInt = modifyValue(lightInt);
+  
+  return;
 }
 
 // ------------------------------------------------------------------------------------------------------
