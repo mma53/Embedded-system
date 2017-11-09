@@ -10,9 +10,9 @@
 #define HIGH 0x1
 #define LOW  0x0
 
-volatile int extDist = 0;
-volatile int lightInt = 0;
-volatile int currTemp = 0;
+volatile int extDist = 0x26;
+volatile int lightInt = 0x26;
+volatile int currTemp = 0x26;
 
 
 /* Initialize serial connection with given baudrate. */
