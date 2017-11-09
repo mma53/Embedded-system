@@ -51,14 +51,20 @@ char receive(void) {
 
 void checkExtDist() {
   /* Code to see extension distance here */
+  
+  return;
 }
 
 void checkTemp() {
   /* Code to check current temperature here */
+  
+  return;
 }
 
 void checkLight() {
   /* Code to check current light intensity here */
+  
+  return;
 }
 
 // ------------------------------------------------------------------------------------------------------
@@ -106,6 +112,13 @@ void tryToSendData() {
   _delay_ms(1000);
 }
 
+void sendSOS() {
+  transmit('S');
+  transmit('O');
+  transmit('S');
+  transmit(' ');
+}
+
 int main() {
   initialize_serial(19200);
   
@@ -118,7 +131,8 @@ int main() {
   SCH_Add_Task(checkExtDist, 0, 500); // Check screen extension every 5 seconds.
   SCH_Add_Task(checkTemp, 0, 4000); // Check temperature every 40 seconds.
   SCH_Add_Task(checkLight, 0, 3000); // Check light intensity every 30 seconds.
-  SCH_Add_Task(tryToSendData, 0, 6000); // Try to send data every 60 seconds.
+  //SCH_Add_Task(tryToSendData, 0, 6000); // Try to send data every 60 seconds.
+  SCH_Add_Task(sendSOS, 0, 1000);
   
   while(1) {
     SCH_Dispatch_Tasks();
