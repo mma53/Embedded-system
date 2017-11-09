@@ -52,17 +52,23 @@ char receive(void) {
 void checkExtDist() {
   /* Code to see extension distance here */
   
+  extDist = modifyValue(extDist);
+  
   return;
 }
 
 void checkTemp() {
   /* Code to check current temperature here */
   
+  currTemp = modifyValue(currTemp);
+  
   return;
 }
 
 void checkLight() {
   /* Code to check current light intensity here */
+  
+  lightInt = modifyValue(lightInt);
   
   return;
 }
@@ -100,16 +106,15 @@ void modifyValues() {
 // ------------------------------------------------------------------------------------------------------
 
 void tryToSendData() {
-  modifyValues();
   transmit(' ');
   transmit(' ');
-  transmit(' ');
-  transmit(' ');
-  transmitInt(extDist);
-  //transmitInt(lightInt);
-  //transmitInt(currTemp);
   transmit('.');
-  _delay_ms(1000);
+  transmitInt(extDist);
+  transmit('.');
+  transmitInt(lightInt);
+  transmit('.');
+  transmitInt(currTemp);
+  transmit('.');
 }
 
 void sendSOS() {
@@ -132,7 +137,7 @@ int main() {
   SCH_Add_Task(checkExtDist, 0, 500); // Check screen extension every 5 seconds.
   SCH_Add_Task(checkTemp, 0, 4000); // Check temperature every 40 seconds.
   SCH_Add_Task(checkLight, 0, 3000); // Check light intensity every 30 seconds.
-  //SCH_Add_Task(tryToSendData, 0, 6000); // Try to send data every 60 seconds.
+  SCH_Add_Task(tryToSendData, 0, 6000); // Try to send data every 60 seconds.
   SCH_Add_Task(sendSOS, 0, 1000);
   
   while(1) {
