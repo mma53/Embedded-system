@@ -116,7 +116,7 @@ void sendSOS() {
   transmit('S');
   transmit('O');
   transmit('S');
-  transmit(' ');
+  transmit('.');
 }
 
 int main() {
@@ -125,6 +125,7 @@ int main() {
   SCH_Init_T1();
   SCH_Start();
   
+  sendSOS();
   
   
   // 10ms/tick, 1s = 100.
