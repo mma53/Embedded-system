@@ -1,6 +1,6 @@
 import serial
 
-ser = serial.Serial(port='COM4', baudrate=9600, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, timeout=2)
+ser = serial.Serial(port='COM4', baudrate=9600, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE, timeout=1)
 
 try:
     ser.isOpen()
@@ -12,7 +12,7 @@ except:
 if(ser.isOpen()):
     try:
         while(1):
-            print(ser.read())
+            print(ser.read(size=2))
     except Exception:
         print("Error")
 else:
