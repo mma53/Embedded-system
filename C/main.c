@@ -63,24 +63,6 @@ int modifyValue(int value) {
   return value;
 }
 
-/* TO BE REMOVED!! Modifies values of the global integers to provide testing input for the Python team */
-void modifyValues() {
-  int i;
-  int ext = extDist;
-  modifyValue(ext);
-  extDist = ext;
-  int light = lightInt;
-  for(i = 0; i < 3; i++) {
-    modifyValue(light);
-  }
-  lightInt = light;
-  int temp = currTemp;
-  for(i = 0; i < 2; i++) {
-    modifyValue(temp);
-  }
-  currTemp = temp;
-}
-
 // ------------------------------------------------------------------------------------------------------
 
 void checkExtDist() {
@@ -109,21 +91,18 @@ void checkLight() {
 
 // ------------------------------------------------------------------------------------------------------
 
-void tryToSendData() {
-  transmit(' ');
-  transmit(' ');
-  transmit('.');
-  transmitInt(extDist);
-  transmit('.');
-  transmitInt(lightInt);
-  transmit('.');
-  transmitInt(currTemp);
-  transmit('.');
+void sendEOL() {
+  transmitInt(0x0D0A);
 }
 
-void sendPing() {
-  transmitInt(0x2E2D);
+void sendData() {
+  transmitInt(extDist);
+  transmitInt(lightInt);
+  transmitInt(currTemp);
+  sendEOL();
 }
+
+
 
 int main() {
   initialize_serial(19200);
@@ -136,8 +115,7 @@ int main() {
   SCH_Add_Task(checkExtDist, 1, 500); // Check screen extension every 5 seconds.
   SCH_Add_Task(checkTemp, 2, 4000); // Check temperature every 40 seconds.
   SCH_Add_Task(checkLight, 3, 3000); // Check light intensity every 30 seconds.
-  SCH_Add_Task(tryToSendData, 5, 6000); // Try to send data every 60 seconds.
-  SCH_Add_Task(sendPing, 0, 1000);
+  SCH_Add_Task(sendData, 5, 6000); // Try to send data every 60 seconds.
   
   while(1) {
     SCH_Dispatch_Tasks();
