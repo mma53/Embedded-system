@@ -14,10 +14,10 @@ volatile int extDist = 0x26;
 volatile int lightInt = 0x26;
 volatile int currTemp = 0x26;
 
-union intToChar {
+union {
   int intValue;
   char charArray[2];
-};
+} intToChar;
 
 /* Initialize serial connection with given baudrate. */
 void initialize_serial(long baudrate) {
@@ -38,10 +38,9 @@ void transmit(uint8_t data) {
 
 void transmitInt(int data) {
   int i;
-  intToChar dataHack;
-  dataHack.intValue = data;\
+  intToChar.intValue = data;\
   for(i = 0; i < 2; i++) {
-    char toSend = dataHack.charArray[i];
+    char toSend = intToChar.charArray[i];
     transmit(toSend);
   }
 }
@@ -123,7 +122,7 @@ void tryToSendData() {
 }
 
 void sendPing() {
-  transmit(0x2E2D);
+  transmitInt(0x2E2D);
 }
 
 int main() {
