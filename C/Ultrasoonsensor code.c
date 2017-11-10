@@ -1,12 +1,7 @@
-// ultrasoonsensor code
-/*
- * distance.c
- *
- * meausers distance betwee 2 and 70 cm
- *
- * Created: 29-6-2016 14:44:43
- *  Author: jacob
- */ 
+/* 
+ * ultrasoonsensor code
+ * needs distance.h
+ */
 
 /* 
  * HC-SR04
@@ -17,6 +12,7 @@
  * CLK : uno 9  (PB1) clock
  * STB : uno 10 (PB2) strobe
  *
+ * UNO Pinout: https://i.imgur.com/DnM86tE.png
  */
 
 #include <avr/io.h>
