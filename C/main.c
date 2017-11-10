@@ -10,14 +10,14 @@
 #define HIGH 0x1
 #define LOW  0x0
 
-volatile int extDist = 0x26;
-volatile int lightInt = 0x26;
-volatile int currTemp = 0x26;
+volatile int extDist = 0x0026;
+volatile int lightInt = 0x0026;
+volatile int currTemp = 0x0026;
 
-union intToChar {
+union {
   int intValue;
   char charArray[2];
-};
+} intToChar;
 
 /* Initialize serial connection with given baudrate. */
 void initialize_serial(long baudrate) {
@@ -38,10 +38,9 @@ void transmit(uint8_t data) {
 
 void transmitInt(int data) {
   int i;
-  intToChar dataHack;
-  dataHack.intValue = data;\
+  intToChar.intValue = data;\
   for(i = 0; i < 2; i++) {
-    char toSend = dataHack.charArray[i];
+    char toSend = intToChar.charArray[1-i];
     transmit(toSend);
   }
 }
@@ -54,77 +53,41 @@ char receive(void) {
 
 // ------------------------------------------------------------------------------------------------------
 
-/* TO BE REMOVED!! Changes a given int by +1 or resets it to 0 when it has reached 10k */
-int modifyValue(int value) {
-  if(value > 10000) {
-    value = 0;
-    return value;
-  }
-  value++;
-  return value;
-}
-
-/* TO BE REMOVED!! Modifies values of the global integers to provide testing input for the Python team */
-void modifyValues() {
-  int i;
-  int ext = extDist;
-  modifyValue(ext);
-  extDist = ext;
-  int light = lightInt;
-  for(i = 0; i < 3; i++) {
-    modifyValue(light);
-  }
-  lightInt = light;
-  int temp = currTemp;
-  for(i = 0; i < 2; i++) {
-    modifyValue(temp);
-  }
-  currTemp = temp;
-}
-
-// ------------------------------------------------------------------------------------------------------
-
 void checkExtDist() {
   /* Code to see extension distance here */
-  
-  extDist = modifyValue(extDist);
+  (extDist >= 10000) ? (extDist = 0) : (extDist += 1);
   
   return;
 }
 
 void checkTemp() {
   /* Code to check current temperature here */
-  
-  currTemp = modifyValue(currTemp);
+  (currTemp >= 10000) ? (currTemp = 0) : (currTemp += 3);
   
   return;
 }
 
 void checkLight() {
   /* Code to check current light intensity here */
-  
-  lightInt = modifyValue(lightInt);
+  (lightInt >= 10000) ? (lightInt = 0) : (lightInt += 2);
   
   return;
 }
 
 // ------------------------------------------------------------------------------------------------------
 
-void tryToSendData() {
-  transmit(' ');
-  transmit(' ');
-  transmit('.');
-  transmitInt(extDist);
-  transmit('.');
-  transmitInt(lightInt);
-  transmit('.');
-  transmitInt(currTemp);
-  transmit('.');
+void sendEOL() {
+  transmitInt(0x0D0A);
 }
 
-void sendPing() {
-  transmit(0x2E2D);
+void sendData() {
+  transmitInt(extDist);
+  transmitInt(lightInt);
+  transmitInt(currTemp);
+  sendEOL();
 }
+
+
 
 int main() {
   initialize_serial(19200);
@@ -137,8 +100,7 @@ int main() {
   SCH_Add_Task(checkExtDist, 1, 500); // Check screen extension every 5 seconds.
   SCH_Add_Task(checkTemp, 2, 4000); // Check temperature every 40 seconds.
   SCH_Add_Task(checkLight, 3, 3000); // Check light intensity every 30 seconds.
-  SCH_Add_Task(tryToSendData, 5, 6000); // Try to send data every 60 seconds.
-  SCH_Add_Task(sendPing, 0, 1000);
+  SCH_Add_Task(sendData, 5, 6000); // Try to send data every 60 seconds.
   
   while(1) {
     SCH_Dispatch_Tasks();
