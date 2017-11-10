@@ -53,22 +53,10 @@ char receive(void) {
 
 // ------------------------------------------------------------------------------------------------------
 
-/* TO BE REMOVED!! Changes a given int by +1 or resets it to 0 when it has reached 10k */
-int modifyValue(int value) {
-  if(value > 10000) {
-    value = 0;
-    return value;
-  }
-  value++;
-  return value;
-}
-
-// ------------------------------------------------------------------------------------------------------
-
 void checkExtDist() {
   /* Code to see extension distance here */
   
-  extDist = modifyValue(extDist);
+  extDist += 1;
   
   return;
 }
@@ -76,7 +64,7 @@ void checkExtDist() {
 void checkTemp() {
   /* Code to check current temperature here */
   
-  currTemp = modifyValue(currTemp);
+  currTemp += 2;
   
   return;
 }
@@ -84,7 +72,7 @@ void checkTemp() {
 void checkLight() {
   /* Code to check current light intensity here */
   
-  lightInt = modifyValue(lightInt);
+  lightInt += 3;
   
   return;
 }
