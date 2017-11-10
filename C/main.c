@@ -10,9 +10,9 @@
 #define HIGH 0x1
 #define LOW  0x0
 
-volatile int extDist = 0x26;
-volatile int lightInt = 0x26;
-volatile int currTemp = 0x26;
+volatile int extDist = 0x0026;
+volatile int lightInt = 0x0026;
+volatile int currTemp = 0x0026;
 
 union {
   int intValue;
