@@ -80,5 +80,5 @@ class Page2(tk.Frame):
 
 
 app = Window()
-app.geometry = "800x600"
+
 app.mainloop()
