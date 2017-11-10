@@ -40,7 +40,7 @@ void transmitInt(int data) {
   int i;
   intToChar.intValue = data;\
   for(i = 0; i < 2; i++) {
-    char toSend = intToChar.charArray[i];
+    char toSend = intToChar.charArray[1-i];
     transmit(toSend);
   }
 }
@@ -55,24 +55,21 @@ char receive(void) {
 
 void checkExtDist() {
   /* Code to see extension distance here */
-  
-  extDist += 1;
+  (extDist >= 10000) ? (extDist = 0) : (extDist += 1);
   
   return;
 }
 
 void checkTemp() {
   /* Code to check current temperature here */
-  
-  currTemp += 2;
+  (currTemp >= 10000) ? (currTemp = 0) : (currTemp += 3);
   
   return;
 }
 
 void checkLight() {
   /* Code to check current light intensity here */
-  
-  lightInt += 3;
+  (lightInt >= 10000) ? (lightInt = 0) : (lightInt += 2);
   
   return;
 }
