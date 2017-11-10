@@ -14,6 +14,10 @@ volatile int extDist = 0x26;
 volatile int lightInt = 0x26;
 volatile int currTemp = 0x26;
 
+union intToChar {
+  int intValue;
+  char charArray[2];
+};
 
 /* Initialize serial connection with given baudrate. */
 void initialize_serial(long baudrate) {
@@ -34,10 +38,11 @@ void transmit(uint8_t data) {
 
 void transmitInt(int data) {
   int i;
+  intToChar dataHack;
+  dataHack.intValue = data;\
   for(i = 0; i < 2; i++) {
-    char toSend = data >> 8;
+    char toSend = dataHack.charArray[i];
     transmit(toSend);
-    data <<= 8;
   }
 }
 
@@ -117,11 +122,8 @@ void tryToSendData() {
   transmit('.');
 }
 
-void sendSOS() {
-  transmit('S');
-  transmit('O');
-  transmit('S');
-  transmit('.');
+void sendPing() {
+  transmit(0x2E2D);
 }
 
 int main() {
@@ -130,15 +132,13 @@ int main() {
   SCH_Init_T1();
   SCH_Start();
   
-  sendSOS();
-  
   
   // 10ms/tick, 1s = 100.
   SCH_Add_Task(checkExtDist, 1, 500); // Check screen extension every 5 seconds.
   SCH_Add_Task(checkTemp, 2, 4000); // Check temperature every 40 seconds.
   SCH_Add_Task(checkLight, 3, 3000); // Check light intensity every 30 seconds.
   SCH_Add_Task(tryToSendData, 5, 6000); // Try to send data every 60 seconds.
-  SCH_Add_Task(sendSOS, 0, 1000);
+  SCH_Add_Task(sendPing, 0, 1000);
   
   while(1) {
     SCH_Dispatch_Tasks();
