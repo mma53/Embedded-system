@@ -121,7 +121,6 @@ void checkTemp() {
 void checkLight() {
   lightInt = ADCsingleREAD(0);
   if(lightInt >= 150 && extDist != 2) {
-  if(lightInt >= 150 && extDist != 2) {
     extendScreen();
   }
   if(lightInt < 120 && extDist != 0) {
@@ -155,7 +154,7 @@ int main() {
   
   
   
-  // 10ms/tick, 1s = 100.
+  // 10ms/tick, 1s = 100 ticks.
   if(sensorType == 'L') {
   SCH_Add_Task(checkLight, 3, 3000); // Check light intensity every 30 seconds.
   }
