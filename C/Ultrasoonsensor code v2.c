@@ -43,11 +43,47 @@ char receive(void) {
   return UDR0;
 }
 
+//source of PulseIn translation: https://forum.arduino.cc/index.php?topic=356243.0
+unsigned long RC_VALUE;
+
+unsigned long pulseIn()
+{
+  char RC_PIN_STATE = (PIND & (1<<PD3));
+  
+  //timeout zone
+  unsigned long numloops = 0;
+  unsigned long maxloops = 500000;
+  unsigned long width = 0;
+  // wait for any previous pulse to end
+  while ( RC_PIN_STATE == 1)
+  {
+    RC_PIN_STATE = (PIND & (1<<PD3)); //keep reading the pin until it changes the state
+    if (numloops++ == maxloops) break;
+  }
+  // wait for the pulse to start
+  while (RC_PIN_STATE == 0)
+  {
+    RC_PIN_STATE = (PIND & (1<<PD3)); //keep reading the pin until it changes the state
+    if (numloops++ == maxloops) break;
+  }
+  
+  // wait for the pulse to stop @ here we are measuring the pulse width = incrementing the WIDTH value by one each cycle. atmega328 1 micro second is equal to 16 cycles.
+  while (RC_PIN_STATE == 1)
+  {
+    RC_PIN_STATE = (PIND & (1<<PD3));
+    if (numloops++ == maxloops) break;
+    width++;
+  }
+
+  RC_VALUE = width/16;
+
+  return RC_VALUE;
+}
 // void loop()
 // {
 //   // const int trigPin = 2; // pind2
 //   // const int echoPin = 4; // pind4
-//   // establish variables for duration of the ping, 
+//   // establish variables for duration of the ping,
 //   // and the distance result in inches and centimeters:
 //   long duration, cm;
 //   // The sensor is triggered by a HIGH pulse of 10 or more microseconds.
@@ -85,24 +121,22 @@ int main()
   /* Set baudrate. */
   initialize_serial(9600);
   /* initialize some variables */
-  int distance;
   long duration, cm;
-  /* Set pind4 to output and pind2 to input*/
-   DDRD |= 8;
-   DDRD |= 2;
-    while (1) 
-    {
-        // The sensor is triggered by a HIGH pulse of 10 or more microseconds.
-        // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
-        PORTD |= (3<<0);
-        _delay_us(2);
-        PORTD &= ~(3<<1);
-        _delay_us(10);
-        PORTD |= (3<<0);
-        duration = pulseIn(4, HIGH);   //nog vertalen naar atmel
-        cm = microsecondsToCentimeters(duration);
-        Serial.print(cm);
-        Serial.print('\n');
-        _delay_ms(100);
-    }
+  /* Set pind2 to input and pind4 to output*/
+  DDRD = DDRD | 0B00001000; // port PD2 is an input for the RC signal
+  while (1)
+  {
+    // The sensor is triggered by a HIGH pulse of 10 or more microseconds.
+    // Give a short LOW pulse beforehand to ensure a clean HIGH pulse:
+    PORTD &=~ _BV(PB3);
+    _delay_us(2);
+    PORTD |= _BV(PB3);
+    _delay_us(10);
+    PORTD &=~ _BV(PB3);
+    duration = pulseIn(RC_VALUE);   //nog vertalen naar atmel
+    cm = microsecondsToCentimeters(duration);
+    Serial.print(cm);
+    Serial.print('\n');
+    _delay_ms(100);
+  }
 }
