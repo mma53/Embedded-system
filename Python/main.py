@@ -10,7 +10,7 @@ ser.open()
 print("connected to: " + ser.portstr)
 
 def inputToInt(input):
-    toReturn = input[0]*255 + input[1]
+    toReturn = input[0]*256 + input[1]
     return toReturn
 
 def strToInt(input):
