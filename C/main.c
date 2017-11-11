@@ -11,10 +11,13 @@
 #define HIGH 0x1
 #define LOW  0x0
 
-volatile int extDist = 0x0026;
-volatile int lightInt = 0x0026;
-volatile int currTemp = 0x0026;
+#define READ 0x0
+#define SEND 0x1
 
+volatile int extDist = 0;
+volatile int lightInt = 0;
+volatile int currTemp = 0;
+int lightOn = 0;
 
 // ------------------------------------------------------------------------------------------------------
 /* AUXILIARY FUNCTIONS FOR CHECKEXTDIST */
@@ -27,27 +30,106 @@ volatile int currTemp = 0x0026;
 // ------------------------------------------------------------------------------------------------------
 /* AUXILIARY FUNCTIONS FOR CHECKLIGHT */
 
+/*
+ * This amazing thing is from https://arduino.stackexchange.com/a/11770
+ * Reads from a single pin on the analog port.
+ * adctouse = pin to read from. 
+ */
+int ADCsingleREAD(uint8_t adctouse)
+{
+  int ADCval;
+
+  ADMUX = adctouse;        // use #1 ADC
+  ADMUX |= (1 << REFS0);   // use AVcc as the reference
+  ADMUX &= ~(1 << ADLAR);  // clear for 10 bit resolution
+
+  // 128 prescale for 8Mhz
+  ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
+
+  ADCSRA |= (1 << ADEN);    // Enable the ADC
+  ADCSRA |= (1 << ADSC);    // Start the ADC conversion
+
+  while(ADCSRA & (1 << ADSC)); // waits for the ADC to finish
+
+  ADCval = ADCL;
+  ADCval = (ADCH << 8) + ADCval; // ADCH is read so ADC can be updated again
+
+  return ADCval;
+}
+
+// ------------------------------------------------------------------------------------------------------
+
+void initializePortB(uint8_t state) {
+  uint8_t bitmask;
+  (state == 0) ? (bitmask = 0b000000) : (bitmask = 0b111111);
+  DDRB |= bitmask;
+  return;
+}
+
+// ------------------------------------------------------------------------------------------------------
+
+void extendScreen() {
+  PORTB &=~ _BV(PD0);
+  PORTB |= _BV(PD1);
+  PORTB |= _BV(PD2);
+  extDist = 1;
+  currTemp = PORTB;
+  return;
+}
+
+void retractScreen() {
+  PORTB |= _BV(PD0);
+  PORTB |= _BV(PD1);
+  PORTB &=~ _BV(PD2);
+  extDist = 1;
+  currTemp = PORTB;
+  return;
+}
+
+void switchB1() {
+  if(extDist == 1) {
+    if(lightOn == 1) {
+      PORTB &=~ _BV(PD1);
+      lightOn = 0;
+    } else {
+      PORTB |= _BV(PD1);
+      lightOn = 1;
+    }
+  } else {
+    PORTB &=~ _BV(PD1);
+  }
+  return;
+}
 
 // ------------------------------------------------------------------------------------------------------
 
 void checkExtDist() {
-  /* Code to see extension distance here */
-  (extDist >= 10000) ? (extDist = 0) : (extDist += 1);
+  // TESTING CODE. TO BE REPLACED BY MEASUREMENTS.
+  if(extDist == 1 && PORTB <= 3) {
+	  extDist = 0;
+  }
+  if(extDist == 1 && PORTB >= 4){
+    extDist = 2;
+  }
   
   return;
 }
 
 void checkTemp() {
   /* Code to check current temperature here */
-  (currTemp >= 10000) ? (currTemp = 0) : (currTemp += 3);
+  //(currTemp >= 10000) ? (currTemp = 0) : (currTemp += 3);
   
   return;
 }
 
 void checkLight() {
-  /* Code to check current light intensity here */
-  (lightInt >= 10000) ? (lightInt = 0) : (lightInt += 2);
-  
+  lightInt = ADCsingleREAD(0);
+  if(lightInt >= 150 && extDist != 2) {
+    extendScreen();
+  }
+  if(lightInt < 120 && extDist != 0) {
+    retractScreen();
+  }
   return;
 }
 
@@ -68,16 +150,19 @@ void sendData() {
 
 int main() {
   initialize_serial(19200);
+  initializePortB(SEND);
+  PORTB |= _BV(PD0);
   
   SCH_Init_T1();
   SCH_Start();
-  
   
   // 10ms/tick, 1s = 100.
   SCH_Add_Task(checkExtDist, 1, 500); // Check screen extension every 5 seconds.
   SCH_Add_Task(checkTemp, 2, 4000); // Check temperature every 40 seconds.
   SCH_Add_Task(checkLight, 3, 3000); // Check light intensity every 30 seconds.
   SCH_Add_Task(sendData, 5, 6000); // Try to send data every 60 seconds.
+  SCH_Add_Task(switchB1,6, 50); // Blink if applicable, every second.
+  
   
   while(1) {
     SCH_Dispatch_Tasks();
