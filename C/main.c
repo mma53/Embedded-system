@@ -14,6 +14,8 @@
 #define READ 0x0
 #define SEND 0x1
 
+char sensorType = 'L';
+
 volatile int extDist = 0;
 volatile int lightInt = 0;
 volatile int currTemp = 0;
@@ -118,13 +120,13 @@ void checkTemp() {
 
 void checkLight() {
   lightInt = ADCsingleREAD(0);
-  /*if(lightInt >= 150 && extDist != 2) {
+  if(lightInt >= 150 && extDist != 2) {
   if(lightInt >= 150 && extDist != 2) {
     extendScreen();
   }
   if(lightInt < 120 && extDist != 0) {
     retractScreen();
-  }*/
+  }
   return;
 }
 
@@ -151,10 +153,17 @@ int main() {
   SCH_Init_T1();
   SCH_Start();
   
+  
+  
   // 10ms/tick, 1s = 100.
-  SCH_Add_Task(checkExtDist, 1, 500); // Check screen extension every 5 seconds.
-  SCH_Add_Task(checkTemp, 2, 4000); // Check temperature every 40 seconds.
+  if(sensorType == 'L') {
   SCH_Add_Task(checkLight, 3, 3000); // Check light intensity every 30 seconds.
+  }
+  if(sensorType == 'T') {
+    SCH_Add_Task(checkTemp, 2, 4000); // Check temperature every 40 seconds.
+  }
+  
+  SCH_Add_Task(checkExtDist, 1, 500); // Check screen extension every 5 seconds.
   SCH_Add_Task(sendData, 5, 6000); // Try to send data every 60 seconds.
   SCH_Add_Task(switchB1,6, 50); // Blink if applicable, every second.
   
