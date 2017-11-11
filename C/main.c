@@ -20,15 +20,7 @@ volatile int currTemp = 0;
 int lightOn = 0;
 
 // ------------------------------------------------------------------------------------------------------
-/* AUXILIARY FUNCTIONS FOR CHECKEXTDIST */
-
-
-// ------------------------------------------------------------------------------------------------------
-/* AUXILIARY FUNCTIONS FOR CHECKTEMP */
-
-
-// ------------------------------------------------------------------------------------------------------
-/* AUXILIARY FUNCTIONS FOR CHECKLIGHT */
+/* AUXILIARY FUNCTION FOR CHECKLIGHT // CHECKTEMP */
 
 /*
  * This amazing thing is from https://arduino.stackexchange.com/a/11770
@@ -73,7 +65,6 @@ void extendScreen() {
   PORTB |= _BV(PD1);
   PORTB |= _BV(PD2);
   extDist = 1;
-  currTemp = PORTB;
   return;
 }
 
@@ -82,7 +73,6 @@ void retractScreen() {
   PORTB |= _BV(PD1);
   PORTB &=~ _BV(PD2);
   extDist = 1;
-  currTemp = PORTB;
   return;
 }
 
@@ -116,20 +106,25 @@ void checkExtDist() {
 }
 
 void checkTemp() {
-  /* Code to check current temperature here */
-  //(currTemp >= 10000) ? (currTemp = 0) : (currTemp += 3);
-  
+  currTemp = ADCsingleREAD(1);
+  if(currTemp > 155 && extDist != 2) {
+    extendScreen();
+  }
+  if(currTemp < 148 && extDist != 0) {
+    retractScreen();
+  }
   return;
 }
 
 void checkLight() {
   lightInt = ADCsingleREAD(0);
+  /*if(lightInt >= 150 && extDist != 2) {
   if(lightInt >= 150 && extDist != 2) {
     extendScreen();
   }
   if(lightInt < 120 && extDist != 0) {
     retractScreen();
-  }
+  }*/
   return;
 }
 
