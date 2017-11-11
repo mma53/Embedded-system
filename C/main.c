@@ -14,7 +14,8 @@
 #define READ 0x0
 #define SEND 0x1
 
-char sensorType = 'L';
+char lightSensor = 1;
+char tempSensor = 1;
 
 volatile int extDist = 0;
 volatile int lightInt = 0;
@@ -108,17 +109,25 @@ void checkExtDist() {
 }
 
 void checkTemp() {
-  currTemp = ADCsingleREAD(1);
-  if(currTemp > 155 && extDist != 2) {
-    extendScreen();
+  if(tempSensor != 1) {
+    return;  
   }
-  if(currTemp < 148 && extDist != 0) {
-    retractScreen();
+  currTemp = ADCsingleREAD(1);
+  if(lightSensor != 1) {
+	  if(currTemp > 155 && extDist != 2) {
+      extendScreen();
+    }
+    if(currTemp < 148 && extDist != 0) {
+      retractScreen();
+    }
   }
   return;
 }
 
 void checkLight() {
+  if(lightSensor != 1) {
+    return;
+  }
   lightInt = ADCsingleREAD(0);
   if(lightInt >= 150 && extDist != 2) {
     extendScreen();
@@ -155,14 +164,9 @@ int main() {
   
   
   // 10ms/tick, 1s = 100 ticks.
-  if(sensorType == 'L') {
-  SCH_Add_Task(checkLight, 3, 3000); // Check light intensity every 30 seconds.
-  }
-  if(sensorType == 'T') {
-    SCH_Add_Task(checkTemp, 2, 4000); // Check temperature every 40 seconds.
-  }
-  
   SCH_Add_Task(checkExtDist, 1, 500); // Check screen extension every 5 seconds.
+  SCH_Add_Task(checkTemp, 2, 4000); // Check temperature every 40 seconds.
+  SCH_Add_Task(checkLight, 3, 3000); // Check light intensity every 30 seconds.
   SCH_Add_Task(sendData, 5, 6000); // Try to send data every 60 seconds.
   SCH_Add_Task(switchB1,6, 50); // Blink if applicable, every second.
   
