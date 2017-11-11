@@ -113,13 +113,13 @@ void checkTemp() {
   if(currTemp < 148 && extDist != 0) {
     retractScreen();
   }
-  
   return;
 }
 
 void checkLight() {
   lightInt = ADCsingleREAD(0);
   /*if(lightInt >= 150 && extDist != 2) {
+  if(lightInt >= 150 && extDist != 2) {
     extendScreen();
   }
   if(lightInt < 120 && extDist != 0) {
