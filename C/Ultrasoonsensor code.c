@@ -1,5 +1,5 @@
 /* 
- * ultrasoonsensor code
+ * ultrasoonsensor code oude
  * needs distance.h
  */
 
