@@ -149,6 +149,18 @@ void checkLight() {
 
 // ------------------------------------------------------------------------------------------------------
 
+/* Receive bits until full byte has been set OR until timeout has occured, then return bit */
+char receive2(void) {
+  long i = 0;
+  do{
+    if(i >= 160000) {
+      return 0x00;
+    }
+    i++;
+  }while(bit_is_clear(UCSR0A, RXC0));
+	return UDR0;
+}
+
 void sendEOL() {
   transmitInt(0x0D0A);
 }
@@ -178,10 +190,19 @@ void valToLEDs(uint8_t value) {
   }
 }
 
+void registerSensors() {
+  /* TODO: Update from settings stored in EEPROM.
+   * IMPORTANT: ONLY update EEPROM when settings are changed!
+   */
+  int i;
+  for(i=1;i<9;i++) {
+    eeprom_update_byte((uint8_t*)i,receive());
+  }
+}
+
 void checkSensors() {
-  if(eeprom_read_byte((uint8_t*)4) == 0) {
+  if(receive2() == 0xFF) {
     registerSensors();
-    return;
   }
   lightSensor.enabled = eeprom_read_byte((uint8_t*)1);
   lightSensor.port = eeprom_read_byte((uint8_t*)2);
@@ -191,28 +212,6 @@ void checkSensors() {
   tempSensor.port = eeprom_read_byte((uint8_t*)6);
   tempSensor.extVal = eeprom_read_byte((uint8_t*)7);
   tempSensor.retVal = eeprom_read_byte((uint8_t*)8);
-}
-
-void registerSensors() {
-  /* TODO: Update from settings stored in EEPROM.
-   * IMPORTANT: ONLY update EEPROM when settings are changed!
-   */
-  lightSensor.enabled = receive();
-  lightSensor.port = receive();
-  lightSensor.extVal = receive();
-  lightSensor.retVal = receive();
-  tempSensor.enabled = receive();
-  tempSensor.port = receive();
-  tempSensor.extVal = receive();
-  tempSensor.retVal = receive();
-  eeprom_update_byte((uint8_t*)1,lightSensor.enabled);
-  eeprom_update_byte((uint8_t*)2,lightSensor.port);
-  eeprom_update_byte((uint8_t*)3,lightSensor.extVal);
-  eeprom_update_byte((uint8_t*)4,lightSensor.retVal);
-  eeprom_update_byte((uint8_t*)5,tempSensor.enabled);
-  eeprom_update_byte((uint8_t*)6,tempSensor.port);
-  eeprom_update_byte((uint8_t*)7,tempSensor.extVal);
-  eeprom_update_byte((uint8_t*)8,tempSensor.retVal);
 }
 
 int main() {
