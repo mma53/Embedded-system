@@ -17,10 +17,6 @@ data = {}
 def get_entry(self):
     print(entry1.get())
 
-
-
-
-
 #Main window/app
 class Window(tk.Tk):
     #Init van de class
@@ -182,7 +178,8 @@ class Page2(tk.Frame):
         button1 = ttk.Button(self, text="Back to Home",
                              command=lambda: controller.show_frame(StartPage))
         button1.pack()
-'''
+
+''' TESTCODE VOOR HET LEZEN VAN ARDUINO
         ser = serial.Serial()
         ser.baudrate = 19200
         ser.port = 'COM4'
