@@ -17,20 +17,11 @@
 struct analogSensor {
   char enabled;
   char port;
-}
+};
 
+struct analogSensor lightSensor = {0,0};
 
-
-struct analogSensor lightSensor;
-lightSensor.enabled = 0;
-lightSensor.port = 0;
-
-struct analogSensor tempSensor;
-tempSensor.enabled = 0;
-tempSensor.port = 0;
-
-char lightSensor = 1;
-char tempSensor = 0;
+struct analogSensor tempSensor = {0,0};
 
 volatile int extDist = 0;
 volatile int lightInt = 0;
@@ -166,12 +157,44 @@ void sendData() {
   sendEOL();
 }
 
+void valToLEDs(uint8_t value) {
+  PORTB &=~ _BV(PD0);
+  PORTB &=~ _BV(PD1);
+  PORTB &=~ _BV(PD2);
+  if(value >= 4) {
+    PORTB |= _BV(PD2);
+    value -= 4;
+  }
+  if(value >= 2) {
+    PORTB |= _BV(PD1);
+    value -= 2;
+  }
+  if(value >= 1) {
+    PORTB |= _BV(PD0);
+    value -= 1;
+  }
+}
 
+void registerSensors() {
+  /* TODO: Update from settings stored in EEPROM.
+   * IMPORTANT: ONLY update EEPROM when settings are changed!
+   */
+  lightSensor.enabled = receive();
+  lightSensor.port = receive();
+  tempSensor.enabled = receive();
+  tempSensor.port = receive();
+}
 
 int main() {
   initialize_serial(19200);
   initializePortB(SEND);
   PORTB |= _BV(PD0);
+  PORTB |= _BV(PD1);
+  PORTB |= _BV(PD2);
+  _delay_ms(100);
+  registerSensors();
+  PORTB &=~ _BV(PD1);
+  PORTB &=~ _BV(PD2);
   
   SCH_Init_T1();
   SCH_Start();

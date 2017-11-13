@@ -1,13 +1,8 @@
 import serial
+from time import sleep
 
 # basic code, taken from GitHub.
 
-ser = serial.Serial()
-ser.baudrate = 19200
-ser.port = 'COM3'
-ser.open()
-
-print("connected to: " + ser.portstr)
 
 def inputToInt(input):
     toReturn = input[0]*256 + input[1]
@@ -16,6 +11,27 @@ def inputToInt(input):
 def strToInt(input):
     toReturn = int(input);
     return toReturn
+
+def intToOutput(input):
+    output = input.to_bytes(2, byteorder='big')
+    return output;
+
+def initializeSensors(ser):
+    #TODO: Only use this function when settings are changed.
+    sleep(2)
+    ser.write(0x01.to_bytes(1, 'big'))
+    ser.write(0x00.to_bytes(1, 'big'))
+    ser.write(0x01.to_bytes(1, 'big'))
+    ser.write(0x02.to_bytes(1, 'big'))
+
+ser = serial.Serial()
+ser.baudrate = 19200
+ser.port = 'COM3'
+ser.open()
+
+print("connected to: " + ser.portstr)
+
+initializeSensors(ser)
 
 while True:
     line = ser.readline()
