@@ -21,8 +21,12 @@ def initializeSensors(ser):
     sleep(2)
     ser.write(0x01.to_bytes(1, 'big'))
     ser.write(0x00.to_bytes(1, 'big'))
+    ser.write(0x96.to_bytes(1, 'big'))
+    ser.write(0x78.to_bytes(1, 'big'))
     ser.write(0x01.to_bytes(1, 'big'))
     ser.write(0x02.to_bytes(1, 'big'))
+    ser.write(0x9B.to_bytes(1, 'big'))
+    ser.write(0x94.to_bytes(1, 'big'))
 
 ser = serial.Serial()
 ser.baudrate = 19200
@@ -31,7 +35,7 @@ ser.open()
 
 print("connected to: " + ser.portstr)
 
-initializeSensors(ser)
+#initializeSensors(ser)
 
 while True:
     line = ser.readline()

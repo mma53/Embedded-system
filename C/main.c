@@ -1,4 +1,5 @@
 #include <avr/io.h>
+#include <avr/eeprom.h>
 #include <avr/interrupt.h>
 #include <avr/sfr_defs.h>
 #include <stdlib.h>
@@ -17,11 +18,13 @@
 struct analogSensor {
   char enabled;
   char port;
+  char extVal;
+  char retVal;
 };
 
-struct analogSensor lightSensor = {0,0};
+struct analogSensor lightSensor = {0,0,150,120};
 
-struct analogSensor tempSensor = {0,0};
+struct analogSensor tempSensor = {0,0,155,148};
 
 volatile int extDist = 0;
 volatile int lightInt = 0;
@@ -120,10 +123,10 @@ void checkTemp() {
   }
   currTemp = ADCsingleREAD(tempSensor.port);
   if(lightSensor.enabled == 0) {
-	  if(currTemp > 155 && extDist != 2) {
+	  if(currTemp > tempSensor.extVal && extDist != 2) {
       extendScreen();
     }
-    if(currTemp < 148 && extDist != 0) {
+    if(currTemp < tempSensor.retVal && extDist != 0) {
       retractScreen();
     }
   }
@@ -135,10 +138,10 @@ void checkLight() {
     return;
   }
   lightInt = ADCsingleREAD(lightSensor.port);
-  if(lightInt >= 150 && extDist != 2) {
+  if(lightInt >= lightSensor.extVal && extDist != 2) {
     extendScreen();
   }
-  if(lightInt < 120 && extDist != 0) {
+  if(lightInt < lightSensor.retVal && extDist != 0) {
     retractScreen();
   }
   return;
@@ -175,14 +178,41 @@ void valToLEDs(uint8_t value) {
   }
 }
 
+void checkSensors() {
+  if(eeprom_read_byte((uint8_t*)4) == 0) {
+    registerSensors();
+    return;
+  }
+  lightSensor.enabled = eeprom_read_byte((uint8_t*)1);
+  lightSensor.port = eeprom_read_byte((uint8_t*)2);
+  lightSensor.extVal = eeprom_read_byte((uint8_t*)3);
+  lightSensor.retVal = eeprom_read_byte((uint8_t*)4);
+  tempSensor.enabled = eeprom_read_byte((uint8_t*)5);
+  tempSensor.port = eeprom_read_byte((uint8_t*)6);
+  tempSensor.extVal = eeprom_read_byte((uint8_t*)7);
+  tempSensor.retVal = eeprom_read_byte((uint8_t*)8);
+}
+
 void registerSensors() {
   /* TODO: Update from settings stored in EEPROM.
    * IMPORTANT: ONLY update EEPROM when settings are changed!
    */
   lightSensor.enabled = receive();
   lightSensor.port = receive();
+  lightSensor.extVal = receive();
+  lightSensor.retVal = receive();
   tempSensor.enabled = receive();
   tempSensor.port = receive();
+  tempSensor.extVal = receive();
+  tempSensor.retVal = receive();
+  eeprom_update_byte((uint8_t*)1,lightSensor.enabled);
+  eeprom_update_byte((uint8_t*)2,lightSensor.port);
+  eeprom_update_byte((uint8_t*)3,lightSensor.extVal);
+  eeprom_update_byte((uint8_t*)4,lightSensor.retVal);
+  eeprom_update_byte((uint8_t*)5,tempSensor.enabled);
+  eeprom_update_byte((uint8_t*)6,tempSensor.port);
+  eeprom_update_byte((uint8_t*)7,tempSensor.extVal);
+  eeprom_update_byte((uint8_t*)8,tempSensor.retVal);
 }
 
 int main() {
@@ -192,7 +222,7 @@ int main() {
   PORTB |= _BV(PD1);
   PORTB |= _BV(PD2);
   _delay_ms(100);
-  registerSensors();
+  checkSensors();
   PORTB &=~ _BV(PD1);
   PORTB &=~ _BV(PD2);
   
