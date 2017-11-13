@@ -14,8 +14,23 @@
 #define READ 0x0
 #define SEND 0x1
 
+struct analogSensor {
+  char enabled;
+  char port;
+}
+
+
+
+struct analogSensor lightSensor;
+lightSensor.enabled = 0;
+lightSensor.port = 0;
+
+struct analogSensor tempSensor;
+tempSensor.enabled = 0;
+tempSensor.port = 0;
+
 char lightSensor = 1;
-char tempSensor = 1;
+char tempSensor = 0;
 
 volatile int extDist = 0;
 volatile int lightInt = 0;
@@ -109,11 +124,11 @@ void checkExtDist() {
 }
 
 void checkTemp() {
-  if(tempSensor != 1) {
+  if(tempSensor.enabled == 0) {
     return;  
   }
-  currTemp = ADCsingleREAD(1);
-  if(lightSensor != 1) {
+  currTemp = ADCsingleREAD(tempSensor.port);
+  if(lightSensor.enabled == 0) {
 	  if(currTemp > 155 && extDist != 2) {
       extendScreen();
     }
@@ -125,10 +140,10 @@ void checkTemp() {
 }
 
 void checkLight() {
-  if(lightSensor != 1) {
+  if(lightSensor.enabled == 0) {
     return;
   }
-  lightInt = ADCsingleREAD(0);
+  lightInt = ADCsingleREAD(lightSensor.port);
   if(lightInt >= 150 && extDist != 2) {
     extendScreen();
   }
