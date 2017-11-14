@@ -22,12 +22,14 @@ def initializeSensors(ser):
     ser.write(0x0F.to_bytes(1, 'big')) # opening
     ser.write(0x01.to_bytes(1, 'big')) # ENABLED
     ser.write(0x00.to_bytes(1, 'big')) # PORT
-    ser.write(0x32.to_bytes(1, 'big')) # EXTVAL 150 = 0x96 // 0x32 = 50
-    ser.write(0x28.to_bytes(1, 'big')) # RETVAL 120 = 0x78 // 0x28 = 40
-    ser.write(0x00.to_bytes(1, 'big')) # ENABLED 0x01
-    ser.write(0x00.to_bytes(1, 'big')) # PORT 0x01
-    ser.write(0x00.to_bytes(1, 'big')) # EXTVAL 0x9B
-    ser.write(0x00.to_bytes(1, 'big')) # RETVAL 0x94
+    ser.write(0x96.to_bytes(1, 'big')) # EXTVAL 150 = 0x96 // 0x32 = 50
+    ser.write(0x78.to_bytes(1, 'big')) # RETVAL 120 = 0x78 // 0x28 = 40
+    ser.write(0x01.to_bytes(1, 'big')) # ENABLED 0x01
+    ser.write(0x01.to_bytes(1, 'big')) # PORT 0x01
+    ser.write(0x9B.to_bytes(1, 'big')) # EXTVAL 0x9B
+    ser.write(0x94.to_bytes(1, 'big')) # RETVAL 0x94
+
+    # NOTE: NEED TO SEND TWO BYTES FOR LIGHT SENSOR!
 
 ser = serial.Serial()
 ser.baudrate = 19200
